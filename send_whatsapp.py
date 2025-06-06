@@ -25,7 +25,7 @@ def send_poll():
     url = f'{BASE_URL}/messages/poll'
     payload = {
         "to": GROUP_ID,
-        "title": f"{room} מנחה ב-13:30, חדר",
+        "title": f"מנחה ב-13:30, חדר {room}",
         "options": ["מגיע", "תקראו לי אם חסר"],
         "count": 1
     }
@@ -36,7 +36,7 @@ def send_reminder():
     url = f'{BASE_URL}/messages/text'
     payload = {
         "to": GROUP_ID,
-        "body": f"{room} תזכורת: אם עוד לא עניתם לסקר – זה הזמן! נתראה ב־13:30, חדר"
+        "body": f"תזכורת: אם עוד לא עניתם לסקר – זה הזמן! נתראה ב־13:30, חדר {room}"
     }
     r = requests.post(url, headers=HEADERS, json=payload)
     print('Reminder sent:', r.status_code, r.text)
