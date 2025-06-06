@@ -36,7 +36,7 @@ def send_reminder():
     url = f'{BASE_URL}/messages/text'
     payload = {
         "to": GROUP_ID,
-        "text": f"{room} תזכורת: אם עוד לא עניתם לסקר – זה הזמן! נתראה ב־13:30, חדר"
+        "body": f"{room} תזכורת: אם עוד לא עניתם לסקר – זה הזמן! נתראה ב־13:30, חדר"
     }
     r = requests.post(url, headers=HEADERS, json=payload)
     print('Reminder sent:', r.status_code, r.text)
