@@ -25,10 +25,10 @@ jobs:
 
       - name: Determine action and run script
         run: |
-          hour=$(date -u +"%H")
-          if [ "$hour" = "4" ]; then
-            export WHAPI_ACTION=poll
-          else
-            export WHAPI_ACTION=reminder
-          fi
+          # hour=$(date -u +"%H")
+          # if [ "$hour" = "4" ]; then
+          export WHAPI_ACTION=poll
+          #else
+          #  export WHAPI_ACTION=reminder
+          #fi
           python send_whatsapp.py
