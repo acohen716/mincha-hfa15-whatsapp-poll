@@ -1,0 +1,23 @@
+name: Send WhatsApp Message
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        required: true
+        type: string
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    env:
+      WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
+      WHAPI_GROUP_ID: ${{ secrets.WHAPI_GROUP_ID }}
+      WHAPI_ACTION: ${{ inputs.action }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: pip install requests
+      - run: python send_whatsapp.py

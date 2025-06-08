@@ -1,0 +1,12 @@
+name: Send WhatsApp Poll
+
+on:
+  schedule:
+    - cron: '30 4 * * 0-4' # 07:30 Israel Time (UTC+3)
+  workflow_dispatch:
+
+jobs:
+  call-reusable:
+    uses: ./.github/workflows/_send-whatsapp.yml
+    with:
+      action: poll

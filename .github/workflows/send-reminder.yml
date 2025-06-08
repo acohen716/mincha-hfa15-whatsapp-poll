@@ -1,0 +1,12 @@
+name: Send WhatsApp Reminder
+
+on:
+  schedule:
+    - cron: '30 8 * * 0-4' # 11:30 Israel Time (UTC+3)
+  workflow_dispatch:
+
+jobs:
+  call-reusable:
+    uses: ./.github/workflows/_send-whatsapp.yml
+    with:
+      action: reminder
