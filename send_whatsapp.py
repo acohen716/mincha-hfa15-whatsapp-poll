@@ -1,7 +1,7 @@
 import os
 import requests
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 API_TOKEN = os.environ['WHAPI_TOKEN']
 GROUP_ID = os.environ['WHAPI_GROUP_ID']
@@ -15,7 +15,7 @@ HEADERS = {
 
 # Determine room based on day of week
 # weekday() → Monday=0, Sunday=6
-day_of_week = datetime.utcnow().weekday()
+day_of_week = datetime.now(timezone.utc).weekday()
 if day_of_week in [6, 0, 3]:  # Sunday (6), Monday (0), Thursday (3)
     room = "03.500"
 else:  # Tuesday (1), Wednesday (2)
