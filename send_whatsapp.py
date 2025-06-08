@@ -23,10 +23,13 @@ INITIAL_BACKOFF = 2  # seconds
 def log(msg: str, level: str = "info") -> None:
     """Log with GitHub Actions annotation + UTC timestamp."""
     timestamp = datetime.now(timezone.utc).isoformat()
-    annotation = f"::{level}::{msg}" if level in ("error", "warning", "notice") else msg
+    annotation = (
+        f"::{level}::[{timestamp}] {msg}"
+        if level in ("error", "warning", "notice")
+        else msg
+    )
     output_stream = sys.stderr if level == "error" else sys.stdout
     print(annotation, file=output_stream, flush=True)
-    print(f"[{timestamp}] {msg}", flush=True)
 
 
 # Determine room based on day of week
