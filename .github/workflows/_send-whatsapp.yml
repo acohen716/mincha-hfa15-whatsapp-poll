@@ -6,6 +6,11 @@ on:
       action:
         required: true
         type: string
+    secrets:
+      WHAPI_TOKEN:
+        required: true
+      WHAPI_GROUP_ID:
+        required: true
 
 jobs:
   send:
