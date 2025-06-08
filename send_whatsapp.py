@@ -3,14 +3,14 @@ import requests
 import sys
 from datetime import datetime, timezone
 
-API_TOKEN = os.environ['WHAPI_TOKEN']
-GROUP_ID = os.environ['WHAPI_GROUP_ID']
-ACTION = os.environ['WHAPI_ACTION']  # "poll" or "reminder"
+API_TOKEN = os.environ["WHAPI_TOKEN"]
+GROUP_ID = os.environ["WHAPI_GROUP_ID"]
+ACTION = os.environ["WHAPI_ACTION"]  # "poll" or "reminder"
 
-BASE_URL = 'https://gate.whapi.cloud'
+BASE_URL = "https://gate.whapi.cloud"
 HEADERS = {
-    'Authorization': f'Bearer {API_TOKEN}',
-    'Content-Type': 'application/json',
+    "Authorization": f"Bearer {API_TOKEN}",
+    "Content-Type": "application/json",
 }
 
 # Determine room based on day of week
@@ -21,29 +21,32 @@ if day_of_week in [6, 0, 3]:  # Sunday (6), Monday (0), Thursday (3)
 else:  # Tuesday (1), Wednesday (2)
     room = "03.501"
 
+
 def send_poll():
-    url = f'{BASE_URL}/messages/poll'
+    url = f"{BASE_URL}/messages/poll"
     payload = {
         "to": GROUP_ID,
         "title": f"מנחה ב-13:30, חדר {room}",
         "options": ["מגיע", "תקראו לי אם חסר"],
-        "count": 1
+        "count": 1,
     }
     r = requests.post(url, headers=HEADERS, json=payload)
-    print('Poll sent:', r.status_code, r.text)
+    print("Poll sent:", r.status_code, r.text)
+
 
 def send_reminder():
-    url = f'{BASE_URL}/messages/text'
+    url = f"{BASE_URL}/messages/text"
     payload = {
         "to": GROUP_ID,
-        "body": f"תזכורת: אם עוד לא עניתם לסקר – זה הזמן! נתראה ב-13:30, חדר {room}"
+        "body": f"תזכורת: אם עוד לא עניתם לסקר – זה הזמן! נתראה ב-13:30, חדר {room}",
     }
     r = requests.post(url, headers=HEADERS, json=payload)
-    print('Reminder sent:', r.status_code, r.text)
+    print("Reminder sent:", r.status_code, r.text)
 
-if ACTION == 'poll':
+
+if ACTION == "poll":
     send_poll()
-elif ACTION == 'reminder':
+elif ACTION == "reminder":
     send_reminder()
 else:
     print(f"Unknown action: {ACTION}")
