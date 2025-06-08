@@ -2,7 +2,7 @@ import os
 import sys
 import time
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Literal, Optional
 
 import requests
 
@@ -20,14 +20,10 @@ MAX_RETRIES = 3
 INITIAL_BACKOFF = 2  # seconds
 
 
-def log(msg: str, level: str = "info") -> None:
+def log(msg: str, level: Literal["error", "warning", "notice"] = "notice") -> None:
     """Log with GitHub Actions annotation + UTC timestamp."""
-    timestamp = datetime.now(timezone.utc).isoformat()
-    annotation = (
-        f"::{level}::[{timestamp}] {msg}"
-        if level in ("error", "warning", "notice")
-        else msg
-    )
+    timestamp = datetime.now(timezone.utc).isoformat(timespec="milliseconds")
+    annotation = f"::{level}::[{timestamp}] {msg}"
     output_stream = sys.stderr if level == "error" else sys.stdout
     print(annotation, file=output_stream, flush=True)
 
