@@ -1,4 +1,4 @@
-name: Internal: Send WhatsApp Message
+name: Internal - Send WhatsApp Message
 
 on:
   workflow_call:
