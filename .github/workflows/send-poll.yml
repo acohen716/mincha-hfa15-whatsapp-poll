@@ -3,6 +3,7 @@ name: Send WhatsApp Poll
 on:
   schedule:
     - cron: '30 4 * * 0-4' # 07:30 Israel Time (UTC+3)
+  workflow_dispatch: # for testing via manual trigger
 
 jobs:
   call-reusable:
