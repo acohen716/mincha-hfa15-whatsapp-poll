@@ -48,9 +48,9 @@ pytest
 
 # Details
 
-1. The workflows are scheduled to run Sunday - Thursday at 07:30 (poll message) and 11:30 (reminder message)
+1. The workflows are scheduled to run Sunday - Thursday at 07:55 (poll message) and 11:55 (reminder message)
 
-   - GitHub Actions scheduled events [_"can be delayed during periods of high loads"_](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule)
+   - Using https://console.cron-job.org/jobs since GitHub Actions scheduled events [_"can be delayed during periods of high loads"_](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule)
 
 2. It uses the [Whapi WhatsApp API for developers](https://whapi.cloud)
 
