@@ -12,7 +12,7 @@ on:
 
 jobs:
   send:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-latest
     env:
       WHATSAPP_GROUP_ID: ${{ vars.WHATSAPP_GROUP_ID }}
       WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
