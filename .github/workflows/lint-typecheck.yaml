@@ -1,0 +1,20 @@
+name: Lint and Typecheck
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+      - run: pip install flake8 ruff pylint types-requests mypy -r requirements.txt
+      - run: flake8 send_whatsapp.py test_send_whatsapp.py
+      - run: ruff check send_whatsapp.py test_send_whatsapp.py
+      - run: pylint send_whatsapp.py test_send_whatsapp.py
+      - run: mypy send_whatsapp.py test_send_whatsapp.py
