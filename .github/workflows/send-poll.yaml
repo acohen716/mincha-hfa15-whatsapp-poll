@@ -7,7 +7,7 @@ on:
 
 jobs:
   call-reusable:
-    uses: ./.github/workflows/_send-whatsapp.yml
+    uses: ./.github/workflows/_send-whatsapp.yaml
     with:
       action_type: poll
     secrets: inherit
