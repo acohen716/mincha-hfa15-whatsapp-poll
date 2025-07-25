@@ -1,3 +1,11 @@
+"""
+Send WhatsApp poll or reminder messages to a group using the WHAPI cloud API.
+
+This script selects a room based on the day of the week and sends either a poll or a reminder message
+to a WhatsApp group.
+Environment variables required: WHAPI_TOKEN, WHATSAPP_GROUP_ID, ACTION_TYPE.
+"""
+
 import os
 import sys
 import time
@@ -5,6 +13,10 @@ from datetime import datetime, timezone
 from typing import Literal, Optional
 
 import requests
+
+from dotenv import load_dotenv
+
+load_dotenv()  # take env vars from .env file for local development
 
 WHAPI_TOKEN = os.environ["WHAPI_TOKEN"]
 WHATSAPP_GROUP_ID = os.environ["WHATSAPP_GROUP_ID"]
@@ -35,6 +47,11 @@ log(f"Today is weekday {DAY_OF_WEEK}. Selected room: {ROOM}")
 
 
 def send_request_with_retries(url: str, payload: dict) -> Optional[requests.Response]:
+    """
+    Send a POST request with retries and exponential backoff.
+    Logs warnings and errors if requests fail.
+    Returns the response if successful, otherwise exits the program.
+    """
     backoff = INITIAL_BACKOFF
     for attempt in range(1, MAX_RETRIES + 1):
         try:
@@ -57,6 +74,9 @@ def send_request_with_retries(url: str, payload: dict) -> Optional[requests.Resp
 
 
 def send_poll():
+    """
+    Send a poll message to the WhatsApp group with room and time information.
+    """
     url = f"{BASE_URL}/messages/poll"
     payload = {
         "to": WHATSAPP_GROUP_ID,
@@ -70,6 +90,9 @@ def send_poll():
 
 
 def send_reminder():
+    """
+    Send a reminder message to the WhatsApp group if the poll has not been answered.
+    """
     url = f"{BASE_URL}/messages/text"
     payload = {
         "to": WHATSAPP_GROUP_ID,
@@ -81,10 +104,11 @@ def send_reminder():
 
 
 # --- Main Action ---
-if ACTION_TYPE == "poll":
-    send_poll()
-elif ACTION_TYPE == "reminder":
-    send_reminder()
-else:
-    log(f"Unknown action: {ACTION_TYPE}", "error")
-    sys.exit(1)
+if __name__ == "__main__":
+    if ACTION_TYPE == "poll":
+        send_poll()
+    elif ACTION_TYPE == "reminder":
+        send_reminder()
+    else:
+        log(f"Unknown action: {ACTION_TYPE}", "error")
+        sys.exit(1)

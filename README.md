@@ -2,6 +2,52 @@
 
 This repository contains [GitHub Action](https://docs.github.com/en/actions) workflows that sends a Whatsapp poll and reminder message to Amazon HFA15 Mincha Whatsapp group (https://bit.ly/pray-amazon-hfa) to ensure we have a minyan - 10 participants
 
+# Quickstart
+
+## Local Development
+
+1. Create `.env` with the following content:
+   ```sh
+   # For local development
+   WHAPI_TOKEN=<PLACEHOLDER_FOR_WHAPI_TOKEN> # for example get from https://panel.whapi.cloud/channels/NEBULA-LJ56F
+   WHATSAPP_GROUP_ID=120363418977916948@g.us # test group = 120363418977916948@g.us, prod group = 972549451336-1559741675@g.us
+   ACTION_TYPE=poll # poll or reminder
+   ```
+2. Install dependencies:
+   ```sh
+   pip install python-dotenv
+   pip install -r requirements.txt
+   ```
+3. Run the script:
+   ```sh
+   python send_whatsapp.py
+   ```
+
+## Running Tests
+
+```sh
+pip install pytest
+pytest
+```
+
+## Linting & Type Checking
+
+```sh
+pip install flake8 ruff pylint types-requests types-requests mypy
+flake8 send_whatsapp.py test_send_whatsapp.py
+ruff send_whatsapp.py test_send_whatsapp.py
+pylint send_whatsapp.py test_send_whatsapp.py
+mypy send_whatsapp.py test_send_whatsapp.py
+```
+
+# Environment Variables
+
+| Variable          | Description          |
+| ----------------- | -------------------- |
+| WHAPI_TOKEN       | Whapi API token      |
+| WHATSAPP_GROUP_ID | WhatsApp group ID    |
+| ACTION_TYPE       | "poll" or "reminder" |
+
 # Details
 
 1. The workflows are scheduled to run Sunday - Thursday at 07:30 (poll message) and 11:30 (reminder message)
