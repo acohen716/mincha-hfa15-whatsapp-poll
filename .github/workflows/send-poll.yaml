@@ -1,8 +1,9 @@
 name: Send WhatsApp Poll
 
 on:
-  schedule:
-    - cron: '30 4 * * 0-4' # 07:30 Israel Time (UTC+3)
+  # switched to cron-job.org which is more reliable to avoid GitHub Actions delay time
+  # schedule:
+  # - cron: '55 4 * * 0-4' # 07:55 Israel Time (UTC+3)
   workflow_dispatch: # for testing via manual trigger
 
 jobs:
