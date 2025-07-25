@@ -15,7 +15,6 @@ This repository contains [GitHub Action](https://docs.github.com/en/actions) wor
    ```
 2. Install dependencies:
    ```sh
-   pip install python-dotenv
    pip install -r requirements.txt
    ```
 3. Run the script:
@@ -23,21 +22,20 @@ This repository contains [GitHub Action](https://docs.github.com/en/actions) wor
    python send_whatsapp.py
    ```
 
-## Running Tests
-
-```sh
-pip install pytest
-pytest
-```
-
 ## Linting & Type Checking
 
 ```sh
-pip install flake8 ruff pylint types-requests types-requests mypy
+pip install -r requirements-dev.txt
 flake8 send_whatsapp.py test_send_whatsapp.py
 ruff send_whatsapp.py test_send_whatsapp.py
 pylint send_whatsapp.py test_send_whatsapp.py
 mypy send_whatsapp.py test_send_whatsapp.py
+```
+
+## Running Tests
+
+```sh
+pytest
 ```
 
 # Environment Variables

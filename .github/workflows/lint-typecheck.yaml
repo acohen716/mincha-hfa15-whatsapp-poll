@@ -7,14 +7,19 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    env:
+      WHATSAPP_GROUP_ID: 'DUMMY_GROUP_ID'
+      WHAPI_TOKEN: 'DUMMY_TOKEN'
+      ACTION_TYPE: 'DUMMY_ACTION_TYPE'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
           cache: 'pip'
-      - run: pip install flake8 ruff pylint types-requests mypy -r requirements.txt
+      - run: pip install -r requirements.txt -r requirements-dev.txt
       - run: flake8 send_whatsapp.py test_send_whatsapp.py
       - run: ruff check send_whatsapp.py test_send_whatsapp.py
       - run: pylint send_whatsapp.py test_send_whatsapp.py
       - run: mypy send_whatsapp.py test_send_whatsapp.py
+      - run: pytest
