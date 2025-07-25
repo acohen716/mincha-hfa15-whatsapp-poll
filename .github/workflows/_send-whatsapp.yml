@@ -3,22 +3,20 @@ name: Internal - Send WhatsApp Message
 on:
   workflow_call:
     inputs:
-      action:
+      action_type:
         required: true
         type: string
     secrets:
       WHAPI_TOKEN:
-        required: true
-      WHAPI_GROUP_ID:
         required: true
 
 jobs:
   send:
     runs-on: ubuntu-24.04-arm
     env:
+      WHATSAPP_GROUP_ID: ${{ vars.WHATSAPP_GROUP_ID }}
       WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
-      WHAPI_GROUP_ID: ${{ secrets.WHAPI_GROUP_ID }}
-      WHAPI_ACTION: ${{ inputs.action }}
+      ACTION_TYPE: ${{ inputs.action_type }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

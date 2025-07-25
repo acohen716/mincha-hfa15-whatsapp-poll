@@ -6,13 +6,13 @@ from typing import Literal, Optional
 
 import requests
 
-API_TOKEN = os.environ.get("WHAPI_TOKEN", "")
-GROUP_ID = os.environ.get("WHAPI_GROUP_ID", "")
-ACTION = os.environ.get("WHAPI_ACTION", "")  # "poll" or "reminder"
+WHAPI_TOKEN = os.environ["WHAPI_TOKEN"]
+WHATSAPP_GROUP_ID = os.environ["WHATSAPP_GROUP_ID"]
+ACTION_TYPE = os.environ["ACTION_TYPE"]  # "poll" or "reminder"
 
 BASE_URL = "https://gate.whapi.cloud"
 HEADERS = {
-    "Authorization": f"Bearer {API_TOKEN}",
+    "Authorization": f"Bearer {WHAPI_TOKEN}",
     "Content-Type": "application/json",
 }
 
@@ -59,32 +59,32 @@ def send_request_with_retries(url: str, payload: dict) -> Optional[requests.Resp
 def send_poll():
     url = f"{BASE_URL}/messages/poll"
     payload = {
-        "to": GROUP_ID,
+        "to": WHATSAPP_GROUP_ID,
         "title": f"מנחה ב-13:30, חדר {ROOM}",
         "options": ["מגיע", "תקראו לי אם חסר"],
         "count": 1,
     }
     response = send_request_with_retries(url, payload)
     if response:
-        log(f"Poll sent successfully: HTTP {response.status_code}", "notice")
+        log(f"Poll sent successfully: HTTP {response.status_code}")
 
 
 def send_reminder():
     url = f"{BASE_URL}/messages/text"
     payload = {
-        "to": GROUP_ID,
+        "to": WHATSAPP_GROUP_ID,
         "body": f"תזכורת: אם עוד לא עניתם לסקר – זה הזמן! נתראה ב-13:30, חדר {ROOM}",
     }
     response = send_request_with_retries(url, payload)
     if response:
-        log(f"Reminder sent successfully: HTTP {response.status_code}", "notice")
+        log(f"Reminder sent successfully: HTTP {response.status_code}")
 
 
 # --- Main Action ---
-if ACTION == "poll":
+if ACTION_TYPE == "poll":
     send_poll()
-elif ACTION == "reminder":
+elif ACTION_TYPE == "reminder":
     send_reminder()
 else:
-    log(f"Unknown action: {ACTION}", "error")
+    log(f"Unknown action: {ACTION_TYPE}", "error")
     sys.exit(1)

@@ -9,7 +9,5 @@ jobs:
   call-reusable:
     uses: ./.github/workflows/_send-whatsapp.yml
     with:
-      action: poll
-    secrets:
-      WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
-      WHAPI_GROUP_ID: ${{ secrets.WHAPI_GROUP_ID }}
+      action_type: poll
+    secrets: inherit
