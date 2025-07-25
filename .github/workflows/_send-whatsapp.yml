@@ -14,7 +14,7 @@ on:
 
 jobs:
   send:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     env:
       WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
       WHAPI_GROUP_ID: ${{ secrets.WHAPI_GROUP_ID }}
