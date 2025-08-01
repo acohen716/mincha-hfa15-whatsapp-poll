@@ -1,2 +1,0 @@
-python-dotenv # for local development environment variables
-requests

@@ -1,3 +1,14 @@
+[project]
+name = "mincha-hfa15-whatsapp-poll"
+version = "1.0.0"
+description = "Whatsapp poll and reminder message automation for Amazon HFA15 Mincha group"
+readme = "README.md"
+dependencies = [
+    "python-dotenv>=1.1.1",
+    "requests>=2.32.4",
+]
+requires-python = ">=3.12"
+
 [tool.ruff]
 line-length = 120
 
@@ -10,3 +21,11 @@ ignore = ["COM812", "D203", "D213"]
 
 [tool.pyright]
 typeCheckingMode = "strict"
+
+[dependency-groups]
+dev = [
+    "pyright[nodejs]>=1.1.403",
+    "pytest>=8.4.1",
+    "ruff>=0.12.7",
+    "types-requests>=2.32.4.20250611",
+]

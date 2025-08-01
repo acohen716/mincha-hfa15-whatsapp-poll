@@ -1,4 +1,0 @@
-pytest
-pyright[nodejs]
-ruff
-types-requests
