@@ -18,8 +18,6 @@ jobs:
           python-version: '3.x'
           cache: 'pip'
       - run: pip install -r requirements.txt -r requirements-dev.txt
-      - run: flake8 send_whatsapp.py test_send_whatsapp.py
-      - run: ruff check send_whatsapp.py test_send_whatsapp.py
-      - run: pylint send_whatsapp.py test_send_whatsapp.py
-      - run: mypy send_whatsapp.py test_send_whatsapp.py
-      - run: pytest
+      - run: ruff check .
+      - run: pyright .
+      - run: pytest .

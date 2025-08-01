@@ -1,0 +1,12 @@
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["COM812", "D203", "D213"]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"test_*.py" = ["S101"]
+
+[tool.pyright]
+typeCheckingMode = "strict"
