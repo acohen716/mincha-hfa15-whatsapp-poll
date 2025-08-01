@@ -15,25 +15,24 @@ This repository contains [GitHub Action](https://docs.github.com/en/actions) wor
    ```
 2. Install dependencies:
    ```sh
-   pip install -r requirements.txt
+   uv sync
    ```
 3. Run the script:
    ```sh
-   python send_whatsapp.py
+   uv run python send_whatsapp.py
    ```
 
 ## Linting & Type Checking
 
 ```sh
-pip install -r requirements-dev.txt
-ruff check .
-pyright .
+uv run ruff check .
+uv run pyright .
 ```
 
 ## Running Tests
 
 ```sh
-pytest .
+uv run pytest .
 ```
 
 # Environment Variables
