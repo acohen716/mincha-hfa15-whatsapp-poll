@@ -1,6 +1,4 @@
-flake8
-ruff
-pylint
-types-requests
-mypy
 pytest
+pyright[nodejs]
+ruff
+types-requests

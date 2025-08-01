@@ -1,19 +1,19 @@
-"""
-Send WhatsApp poll or reminder messages to a group using the WHAPI cloud API.
+"""Send WhatsApp poll or reminder messages to a group using the WHAPI cloud API.
 
 This script selects a room based on the day of the week and sends either a poll or a reminder message
 to a WhatsApp group.
 Environment variables required: WHAPI_TOKEN, WHATSAPP_GROUP_ID, ACTION_TYPE.
 """
 
+from __future__ import annotations
+
 import os
 import sys
 import time
-from datetime import datetime, timezone
-from typing import Literal, Optional
+from datetime import UTC, datetime
+from typing import Any, Literal
 
 import requests
-
 from dotenv import load_dotenv
 
 load_dotenv()  # take env vars from .env file for local development
@@ -34,21 +34,21 @@ INITIAL_BACKOFF = 2  # seconds
 
 def log(msg: str, level: Literal["error", "warning", "notice"] = "notice") -> None:
     """Log with GitHub Actions annotation + UTC timestamp."""
-    timestamp = datetime.now(timezone.utc).isoformat(timespec="milliseconds")
+    timestamp = datetime.now(UTC).isoformat(timespec="milliseconds")
     annotation = f"::{level}::[{timestamp}] {msg}"
     output_stream = sys.stderr if level == "error" else sys.stdout
     print(annotation, file=output_stream, flush=True)
 
 
 # Determine room based on day of week
-DAY_OF_WEEK = datetime.now(timezone.utc).weekday()  # Monday=0, Sunday=6
+DAY_OF_WEEK = datetime.now(UTC).weekday()  # Monday=0, Sunday=6
 ROOM = "03.500" if DAY_OF_WEEK in [6, 0, 3] else "03.501"
 log(f"Today is weekday {DAY_OF_WEEK}. Selected room: {ROOM}")
 
 
-def send_request_with_retries(url: str, payload: dict) -> Optional[requests.Response]:
-    """
-    Send a POST request with retries and exponential backoff.
+def send_request_with_retries(url: str, payload: dict[Any, Any]) -> requests.Response | None:
+    """Send a POST request with retries and exponential backoff.
+
     Logs warnings and errors if requests fail.
     Returns the response if successful, otherwise exits the program.
     """
@@ -73,10 +73,8 @@ def send_request_with_retries(url: str, payload: dict) -> Optional[requests.Resp
     sys.exit(1)
 
 
-def send_poll():
-    """
-    Send a poll message to the WhatsApp group with room and time information.
-    """
+def send_poll() -> None:
+    """Send a poll message to the WhatsApp group with room and time information."""
     url = f"{BASE_URL}/messages/poll"
     payload = {
         "to": WHATSAPP_GROUP_ID,
@@ -89,10 +87,8 @@ def send_poll():
         log(f"Poll sent successfully: HTTP {response.status_code}")
 
 
-def send_reminder():
-    """
-    Send a reminder message to the WhatsApp group if the poll has not been answered.
-    """
+def send_reminder() -> None:
+    """Send a reminder message to the WhatsApp group if the poll has not been answered."""
     url = f"{BASE_URL}/messages/text"
     payload = {
         "to": WHATSAPP_GROUP_ID,

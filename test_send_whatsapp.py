@@ -1,30 +1,26 @@
-"""
-Unit tests for send_whatsapp.py, covering logging and WhatsApp message sending functions.
-"""
+"""Unit tests for send_whatsapp.py, covering logging and WhatsApp message sending functions."""
 
-# pylint: disable=wrong-import-order
-
-import os
 import sys
-from unittest.mock import patch, MagicMock
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+from dotenv import load_dotenv
 
 import send_whatsapp
 
-
-from dotenv import load_dotenv
-
 load_dotenv()  # take environment variables from .env file for local development
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, str(Path(__file__).parent.resolve()))
 
 
-def test_log_stdout(capsys):
+def test_log_stdout(capsys: pytest.CaptureFixture[str]) -> None:
     """Test that log outputs to stdout for notice level."""
     send_whatsapp.log("test notice", "notice")
     out, _ = capsys.readouterr()
     assert "test notice" in out
 
 
-def test_log_stderr(capsys):
+def test_log_stderr(capsys: pytest.CaptureFixture[str]) -> None:
     """Test that log outputs to stderr for error level."""
     send_whatsapp.log("test error", "error")
     _, err = capsys.readouterr()
@@ -32,20 +28,22 @@ def test_log_stderr(capsys):
 
 
 @patch("requests.post")
-def test_send_request_with_retries_success(mock_post):
+def test_send_request_with_retries_success(mock_post: MagicMock) -> None:
     """Test send_request_with_retries returns response on success."""
     mock_response = MagicMock()
     mock_response.ok = True
     mock_response.status_code = 200
     mock_post.return_value = mock_response
     result = send_whatsapp.send_request_with_retries(
-        "http://fake.url", {"key": "value"}
+        "http://fake.url",
+        {"key": "value"},
     )
-    assert result is not None and result.ok
+    assert result is not None
+    assert result.ok
 
 
 @patch("requests.post")
-def test_send_request_with_retries_failure(mock_post):
+def test_send_request_with_retries_failure(mock_post: MagicMock) -> None:
     """Test send_request_with_retries exits on repeated failure."""
     mock_response = MagicMock()
     mock_response.ok = False
@@ -58,7 +56,7 @@ def test_send_request_with_retries_failure(mock_post):
 
 
 @patch("send_whatsapp.send_request_with_retries")
-def test_send_poll(mock_send):
+def test_send_poll(mock_send: MagicMock) -> None:
     """Test send_poll calls send_request_with_retries and handles response."""
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -68,7 +66,7 @@ def test_send_poll(mock_send):
 
 
 @patch("send_whatsapp.send_request_with_retries")
-def test_send_reminder(mock_send):
+def test_send_reminder(mock_send: MagicMock) -> None:
     """Test send_reminder calls send_request_with_retries and handles response."""
     mock_response = MagicMock()
     mock_response.status_code = 200

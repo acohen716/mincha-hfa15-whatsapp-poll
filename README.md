@@ -26,16 +26,14 @@ This repository contains [GitHub Action](https://docs.github.com/en/actions) wor
 
 ```sh
 pip install -r requirements-dev.txt
-flake8 send_whatsapp.py test_send_whatsapp.py
-ruff send_whatsapp.py test_send_whatsapp.py
-pylint send_whatsapp.py test_send_whatsapp.py
-mypy send_whatsapp.py test_send_whatsapp.py
+ruff check .
+pyright .
 ```
 
 ## Running Tests
 
 ```sh
-pytest
+pytest .
 ```
 
 # Environment Variables
