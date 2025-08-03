@@ -7,10 +7,12 @@ Environment variables required: WHAPI_TOKEN, WHATSAPP_GROUP_ID, ACTION_TYPE.
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 import time
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any, Literal
 
 import requests
@@ -101,8 +103,28 @@ def send_reminder() -> None:
         log(f"Reminder sent successfully: HTTP {response.status_code}")
 
 
+def is_today_holiday() -> str | None:
+    """Return the friendly name if today is a holiday, else None. Looks in assets/holidays_<year>.json."""
+    today = datetime.now(UTC).date()
+    year = today.year
+    holidays_file = Path("assets") / f"holidays_{year}.json"
+    if not holidays_file.exists():
+        log(
+            f"No holidays file found for {year} (expected: {holidays_file}), proceeding as if today is not a holiday.",
+            "warning",
+        )
+        return None
+    with holidays_file.open(encoding="utf-8") as f:
+        holiday_map = json.load(f)
+    return holiday_map.get(today.isoformat())
+
+
 # --- Main Action ---
 if __name__ == "__main__":
+    holiday_name = is_today_holiday()
+    if holiday_name:
+        log(f"Today is a holiday: {holiday_name}. Skipping WhatsApp message.", "notice")
+        sys.exit(0)
     if ACTION_TYPE == "poll":
         send_poll()
     elif ACTION_TYPE == "reminder":
