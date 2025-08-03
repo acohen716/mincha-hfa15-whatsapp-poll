@@ -42,7 +42,9 @@ def log(msg: str, level: Literal["error", "warning", "notice"] = "notice") -> No
 
 # Determine room based on day of week
 DAY_OF_WEEK = datetime.now(UTC).weekday()  # Monday=0, Sunday=6
-ROOM = "03.500" if DAY_OF_WEEK in [6, 0, 3] else "03.501"
+# REMINDER: Remove `2` (Wed) on Tues Sept 16
+# REMINDER: Remove `1` (Tues) on Mon Oct 27
+ROOM = "03.501" if DAY_OF_WEEK in {1, 2} else "03.500"
 log(f"Today is weekday {DAY_OF_WEEK}. Selected room: {ROOM}")
 
 
