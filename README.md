@@ -19,7 +19,7 @@ This repository contains [GitHub Action](https://docs.github.com/en/actions) wor
    ```
 3. Run the script:
    ```sh
-   uv run python send_whatsapp.py
+   uv run --no-dev python send_whatsapp.py
    ```
 
 ## Linting & Type Checking

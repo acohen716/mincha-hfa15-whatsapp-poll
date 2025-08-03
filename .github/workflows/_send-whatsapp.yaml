@@ -26,4 +26,4 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --locked --no-dev
-      - run: uv run python send_whatsapp.py
+      - run: uv run --no-dev python send_whatsapp.py
