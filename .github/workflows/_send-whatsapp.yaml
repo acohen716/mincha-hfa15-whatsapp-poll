@@ -25,5 +25,5 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-      - run: uv sync --locked --all-groups
+      - run: uv sync --locked --no-dev
       - run: uv run python send_whatsapp.py
