@@ -2,6 +2,8 @@
 
 This repository contains [GitHub Action](https://docs.github.com/en/actions) workflows that sends a Whatsapp poll and reminder message to Amazon HFA15 Mincha Whatsapp group (https://bit.ly/pray-amazon-hfa) to ensure we have a minyan - 10 participants
 
+Skips sending on holiday and holiday eve per holiday JSON data in the [assets](./assets/) folder.
+
 # Quickstart
 
 ## Local Development
@@ -55,8 +57,7 @@ uv run pytest .
 
 # Future Features
 
-1. Avoid sending if it's an Israeli public holiday or holiday eve since we won't be at the office and thus we shouldn't send poll/reminder - consider using https://docs.abstractapi.com/holidays (for example: `https://holidays.abstractapi.com/v1/?api_key={API_KEY}$&country=IL&year=2025&month=06&day=02` - 1K requests per month, should be enough) or https://www.api-ninjas.com/api/holidays (for example: `https://api.api-ninjas.com/v1/holidays?country=IL&type=NATIONAL_HOLIDAY_HEBREW` - requires API Key in header - Free Plan 10K requests per month, MORE than enough) or simply create a static dictionary with the holiday data to avoid more API calls
-2. Check if there is NOT tachanun and mention that in the message - https://github.com/yairfax/IsThereTachanunToday/issues/6 (API currently broken)
+1. Check if there is NOT tachanun and mention that in the message - https://github.com/yairfax/IsThereTachanunToday/issues/6 (API currently broken)
 
 # References
 
