@@ -1,10 +1,10 @@
-name: Lint and Typecheck
+name: PR Check - Ruff, Pyright, Pytest
 
 on:
   pull_request:
 
 jobs:
-  lint:
+  pr-check-ruff-pyright-pytest:
     runs-on: ubuntu-latest
     env:
       WHATSAPP_GROUP_ID: 'DUMMY_GROUP_ID'
