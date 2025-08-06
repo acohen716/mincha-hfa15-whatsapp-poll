@@ -1,0 +1,4 @@
+---
+rules:
+  line-length:
+    max: 120 # Allow lines up to 120 characters
