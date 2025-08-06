@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Git
         run: |
@@ -35,15 +37,16 @@ jobs:
       - name: Upgrade locked dependencies
         run: uv lock --upgrade
 
-      - name: Commit updated lockfile
+      - name: Commit updated lockfile if changed
         run: |
-          git checkout -b chore/weekly-deps || git switch chore/weekly-deps
+          git switch -C chore/weekly-deps
           git add uv.lock
-          git commit -m "chore: weekly dependency upgrade [automated]" || echo "No changes to commit"
-
-      - name: Push branch
-        run: |
-          git push --set-upstream origin chore/weekly-deps || echo "Branch already up-to-date"
+          # Check if there are staged changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: weekly dependency upgrade [automated]"
 
       - name: Create or update pull request
         uses: peter-evans/create-pull-request@v6
@@ -56,6 +59,3 @@ jobs:
           body: |
             This PR was created automatically by the weekly workflow.
             It updates locked dependencies using `uv lock --upgrade`.
-          labels: |
-            dependencies
-            automated
