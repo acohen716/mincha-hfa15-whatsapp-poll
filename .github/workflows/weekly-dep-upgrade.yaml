@@ -1,8 +1,11 @@
+---
 name: Weekly Dependency Upgrade
 
-on:
+permissions: {}
+
+on: # yamllint disable-line rule:truthy
   schedule:
-    - cron: '5 6 * * 5' # Every Friday at 06:05 UTC
+    - cron: "5 6 * * 5" # Every Friday at 06:05 UTC
   workflow_dispatch: # Also allows manual triggering
 
 jobs:
@@ -21,7 +24,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
@@ -43,9 +46,9 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'chore: weekly dependency upgrade [automated]'
+          commit-message: "chore: weekly dependency upgrade [automated]"
           branch: chore/weekly-deps
-          title: 'chore: Weekly Dependency Upgrade'
+          title: "chore: Weekly Dependency Upgrade"
           body: |
             This PR was created automatically by the weekly workflow.
             It updates locked dependencies using `uv lock --upgrade`.

@@ -1,6 +1,9 @@
+---
 name: Send WhatsApp Reminder
 
-on:
+permissions: {}
+
+on: # yamllint disable-line rule:truthy
   # switched to cron-job.org which is more reliable to avoid GitHub Actions delay time
   # schedule:
   # - cron: '55 8 * * 0-4' # 11:55 Israel Time (UTC+3)
