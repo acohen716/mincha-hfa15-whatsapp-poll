@@ -93,8 +93,8 @@ def send_poll(room: str) -> None:
     url = f"{BASE_URL}/messages/poll"
     payload = {
         "to": WHATSAPP_GROUP_ID,
-        "title": f"מנחה ב-13:30, חדר {room}\n\n_ההודעה נשלחה אוטומטית_",
-        "options": ["מגיע", "תקראו לי אם חסר"],
+        "title": f"🕍 מנחה ב-13:30, חדר {room}\n\n_ההודעה נשלחה אוטומטית_",
+        "options": ["✅ מגיע", "📞 תקראו לי אם חסר", "❌ לא מגיע (ישיבה, בבית, חולה, חופש וכו')"],
         "count": 1,
     }
     response = send_request_with_retries(url, payload)
@@ -107,7 +107,7 @@ def send_reminder(room: str) -> None:
     url = f"{BASE_URL}/messages/text"
     payload = {
         "to": WHATSAPP_GROUP_ID,
-        "body": f"תזכורת: אם עוד לא עניתם לסקר - זה הזמן! נתראה ב-13:30, חדר {room}\n\n_ההודעה נשלחה אוטומטית_",
+        "body": f"🔔 תזכורת: אם עוד לא עניתם לסקר - זה הזמן! נתראה ב-13:30, חדר {room}\n\n_ההודעה נשלחה אוטומטית_",
     }
     response = send_request_with_retries(url, payload)
     if response:
