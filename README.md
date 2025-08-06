@@ -11,7 +11,7 @@ Skips sending on holiday and holiday eve per holiday JSON data in the [assets](.
 1. Create `.env` with the following content:
    ```sh
    # For local development
-   WHAPI_TOKEN=<PLACEHOLDER_FOR_WHAPI_TOKEN> # for example get from https://panel.whapi.cloud/channels/NEBULA-LJ56F
+   WHAPI_TOKEN=<PLACEHOLDER_FOR_WHAPI_TOKEN> # for example get from https://panel.whapi.cloud/channels/ROCKET-CZJYC
    WHATSAPP_GROUP_ID=120363418977916948@g.us # test group = 120363418977916948@g.us, prod group = 972549451336-1559741675@g.us
    ACTION_TYPE=poll # poll or reminder
    ```
@@ -68,6 +68,6 @@ uv run pytest .
 5. https://support.whapi.cloud/help-desk/getting-started/getting-started
 6. https://support.whapi.cloud/help-desk/hints/how-to-use-polls-as-buttons
 
-# My Whapi Channel Dashboard (Internal, only visible to owner)
+# Whapi Channel Dashboard (Internal, only visible to owner)
 
-Shows API usage etc. - https://panel.whapi.cloud/channels/NEBULA-LJ56F
+Shows API usage etc. - https://panel.whapi.cloud/channels/ROCKET-CZJYC
