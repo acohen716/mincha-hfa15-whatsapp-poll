@@ -39,17 +39,21 @@ jobs:
         run: uv lock --upgrade
 
       - name: Commit updated lockfile if changed
+        id: commit
         run: |
           git switch -C chore/weekly-deps
           git add uv.lock
           # Check if there are staged changes
           if git diff --cached --quiet; then
             echo "No changes to commit"
+            echo "commit-made=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git commit -m "chore: weekly dependency upgrade [automated]"
+          echo "commit-made=true" >> "$GITHUB_OUTPUT"
 
       - name: Create or update pull request
+        if: steps.commit.outputs.commit-made == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
