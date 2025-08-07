@@ -3,7 +3,7 @@ name: PR Check - Ruff, Pyright, Pytest
 
 permissions: {}
 
-on: # yamllint disable-line rule:truthy
+on:
   pull_request:
 
 jobs:
