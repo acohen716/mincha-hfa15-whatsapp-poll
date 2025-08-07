@@ -3,7 +3,7 @@ name: Weekly Dependency Upgrade
 
 permissions: {}
 
-on: # yamllint disable-line rule:truthy
+on:
   schedule:
     - cron: "5 6 * * 5" # Every Friday at 06:05 UTC
   workflow_dispatch: # Also allows manual triggering

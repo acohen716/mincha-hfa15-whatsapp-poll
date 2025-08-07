@@ -3,7 +3,7 @@ name: Internal - Send WhatsApp Message
 
 permissions: {}
 
-on: # yamllint disable-line rule:truthy
+on:
   workflow_call:
     inputs:
       action_type:
