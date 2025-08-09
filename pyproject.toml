@@ -20,7 +20,7 @@ ignore = ["COM812", "D203", "D213"]
 typeCheckingMode = "strict"
 
 [tool.uv]
-required-version = ">=0.8.4"
+required-version = ">=0.8.8"
 
 [dependency-groups]
 dev = [
