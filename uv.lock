@@ -107,8 +107,8 @@ requires-dist = [
 dev = [
     { name = "pyright", extras = ["nodejs"], specifier = ">=1.1.403" },
     { name = "pytest", specifier = ">=8.4.1" },
-    { name = "ruff", specifier = ">=0.12.7" },
-    { name = "types-requests", specifier = ">=2.32.4.20250611" },
+    { name = "ruff", specifier = ">=0.12.8" },
+    { name = "types-requests", specifier = ">=2.32.4.20250809" },
 ]
 
 [[package]]
