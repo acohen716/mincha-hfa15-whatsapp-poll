@@ -19,13 +19,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -38,22 +31,19 @@ jobs:
       - name: Upgrade locked dependencies
         run: uv lock --upgrade
 
-      - name: Commit updated lockfile if changed
-        id: commit
+      # Check if *any* files changed before creating PR
+      - name: Check for changes
+        id: changes
         run: |
-          git switch -C chore/weekly-deps
-          git add uv.lock
-          # Check if there are staged changes
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-            echo "commit-made=false" >> "$GITHUB_OUTPUT"
-            exit 0
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
-          git commit -m "chore: weekly dependency upgrade [automated]"
-          echo "commit-made=true" >> "$GITHUB_OUTPUT"
 
       - name: Create or update pull request
-        if: steps.commit.outputs.commit-made == 'true'
+        id: cpr
+        if: steps.changes.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -64,3 +54,13 @@ jobs:
           body: |
             This PR was created automatically by the weekly workflow.
             It updates locked dependencies using `uv lock --upgrade`.
+          delete-branch: false # Keep branch for reuse
+
+      # Enable auto-merge for the created PR
+      - name: Enable auto-merge
+        if: steps.cpr.outputs.pull-request-number
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: squash
