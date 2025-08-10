@@ -2,7 +2,7 @@ name: "📋 Gemini Scheduled Issue Triage"
 
 on:
   schedule:
-    - cron: "0 * * * *" # Runs every hour
+    - cron: "5 23 * * 4" # Runs every Thursday at 23:05 UTCFF
   workflow_dispatch:
 
 concurrency:
