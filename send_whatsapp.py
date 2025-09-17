@@ -52,9 +52,8 @@ INITIAL_BACKOFF = 2  # seconds
 def get_room_for_today(now: datetime) -> str:
     """Determine the room based on the day of week."""
     weekday = now.weekday()  # Monday=0, Sunday=6
-    # REMINDER: Remove `2` (Wed) on Tues Sept 16
     # REMINDER: Remove `1` (Tues) on Mon Oct 27
-    room = "03.501" if weekday in {1, 2} else "03.500"
+    room = "03.501" if weekday in {1} else "03.500"
     log(f"Today is weekday {weekday}. Selected room: {room}")
     return room
 
