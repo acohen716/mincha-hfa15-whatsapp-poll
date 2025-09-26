@@ -63,8 +63,13 @@ def test_send_request_with_retries_backoff_and_retries(mock_post: MagicMock, moc
 @patch("send_whatsapp.write_github_summary")
 @patch("send_whatsapp.send_reminder")
 @patch("send_whatsapp.send_poll")
-def test_main_successful_flow(mock_poll: MagicMock, mock_reminder: MagicMock, mock_summary: MagicMock) -> None:
+@patch("send_whatsapp.datetime")
+def test_main_successful_flow(
+    mock_datetime: MagicMock, mock_poll: MagicMock, mock_reminder: MagicMock, mock_summary: MagicMock
+) -> None:
     """Test that main writes failed summary first, then success on successful run."""
+    fixed_time_not_holiday = datetime(2000, 1, 1, 0, 0, 0, tzinfo=UTC)
+    mock_datetime.now.return_value = fixed_time_not_holiday
     mock_poll.return_value = None
     mock_reminder.return_value = None
     with patch.dict("os.environ", {"ACTION_TYPE": "poll"}):
@@ -141,8 +146,11 @@ def test_get_room_for_today_various_days() -> None:
 
 @patch("send_whatsapp.write_github_summary")
 @patch("send_whatsapp.send_reminder")
-def test_main_reminder_branch(mock_reminder: MagicMock, mock_summary: MagicMock) -> None:
+@patch("send_whatsapp.datetime")
+def test_main_reminder_branch(mock_datetime: MagicMock, mock_reminder: MagicMock, mock_summary: MagicMock) -> None:
     """Test main writes failed summary first, then success on successful run with reminder branch."""
+    fixed_time_not_holiday = datetime(2000, 1, 1, 0, 0, 0, tzinfo=UTC)
+    mock_datetime.now.return_value = fixed_time_not_holiday
     mock_reminder.return_value = None
     with patch.dict("os.environ", {"ACTION_TYPE": "reminder"}):
         send_whatsapp.main()
