@@ -93,7 +93,7 @@ def send_poll(room: str) -> None:
     payload = {
         "to": WHATSAPP_GROUP_ID,
         "title": f"🕍 מנחה ב-13:30, חדר {room}\n\n_ההודעה נשלחה אוטומטית_",
-        "options": ["✅ מגיע", "📞 תקראו לי אם חסר", "❌ לא מגיע (ישיבה, בבית, חולה, חופש וכו')"],
+        "options": ['✅ מגיע בל"נ', "📞 תקראו לי אם חסר", "❌ לא מגיע (ישיבה, בבית, חולה, חופש וכו')"],
         "count": 1,
     }
     response = send_request_with_retries(url, payload)
