@@ -52,8 +52,12 @@ INITIAL_BACKOFF = 2  # seconds
 def get_room_for_today(now: datetime) -> str:
     """Determine the room based on the day of week."""
     weekday = now.weekday()  # Monday=0, Sunday=6
-    # Reserved 03.500 as of Mon Oct 28 2025 for all Sun - Thurs until Dec 31 2026
-    room = "03.501" if weekday in {} else "03.500"
+    # Except Sun Jan 11 2026, reserved 06.502 as of Thurs Jan 1 2026 for all Sun - Thurs until Dec 31 2026
+    # Reserved 03.500 as of Thurs Jan 1 2026 for all Sun, Mon, Wed, Thurs until Dec 31 2026
+    # Except Tues Jan 20 2026, reserved 03.501 as of Thurs Jan 1 2026 for all Tues until Dec 31 2026
+    # Was asked to free 03.500 on ALL Tues so we will try 06.502 for the upcoming week, if good then we'll
+    #  cancel everything else, else revert back to 03.500 for Sun, Mon, Wed, Thurs and 03.501 for Tues
+    room = "03.501" if weekday in {} else "06.502"
     log(f"Today is weekday {weekday}. Selected room: {room}")
     return room
 
