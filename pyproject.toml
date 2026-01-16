@@ -21,8 +21,8 @@ typeCheckingMode = "strict"
 
 [dependency-groups]
 dev = [
-    "pyright[nodejs]>=1.1.407",
+    "pyright[nodejs]>=1.1.408",
     "pytest>=9.0.2",
-    "ruff>=0.14.10",
-    "types-requests>=2.32.4.20250913",
+    "ruff>=0.14.11",
+    "types-requests>=2.32.4.20260107",
 ]
