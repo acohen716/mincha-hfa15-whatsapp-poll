@@ -33,8 +33,8 @@ def get_env_var(name: str) -> str:
     """Get an environment variable or raise an error if it's not set."""
     try:
         return os.environ[name]
-    except KeyError:
-        log(f"Missing required environment variable: {name}", "error")
+    except Exception as exc:
+        log(f"Missing required environment variable: {name}. Exception: {exc}", "error")
         sys.exit(1)
 
 
@@ -87,8 +87,8 @@ def send_request_with_retries(url: str, payload: dict[Any, Any]) -> requests.Res
                 f"Attempt {attempt}: HTTP {response.status_code} - {response.text}",
                 "warning",
             )
-        except requests.RequestException as e:
-            log(f"Attempt {attempt}: Request failed - {e}", "warning")
+        except Exception as exc:
+            log(f"Attempt {attempt}: Request failed - {exc}", "warning")
 
         if attempt < MAX_RETRIES:
             time.sleep(backoff)
@@ -132,8 +132,8 @@ def send_poll(room: str) -> None:
                 write_last_poll_id(str(msg_id))  # type: ignore[reportUnknownVariableType]
             else:
                 log("Poll response missing message id; not persisting.", "warning")
-        except (ValueError, OSError) as e:
-            log(f"Failed to persist poll response: {e}", "warning")
+        except Exception as exc:
+            log(f"Failed to persist poll response: {exc}", "warning")
 
 
 def _get_message_with_retries(message_id: str) -> requests.Response | None:
@@ -150,8 +150,8 @@ def _get_message_with_retries(message_id: str) -> requests.Response | None:
                 log(f"Fetched message: HTTP {response.status_code}")
                 return response
             log(f"Attempt {attempt}: HTTP {response.status_code} - {response.text}", "warning")
-        except requests.RequestException as e:
-            log(f"Attempt {attempt}: GET failed - {e}", "warning")
+        except Exception as exc:
+            log(f"Attempt {attempt}: GET failed - {exc}", "warning")
         if attempt < MAX_RETRIES:
             time.sleep(backoff)
             backoff *= 2
@@ -217,7 +217,7 @@ def _clear_local_last_poll_id() -> None:
             new_lines = [line for line in lines if not line.strip().startswith("LAST_POLL_MESSAGE_ID=")]
             env_path.write_text("\n".join(new_lines) + ("\n" if new_lines else ""), encoding="utf-8")
         os.environ.pop("LAST_POLL_MESSAGE_ID", None)
-    except OSError as exc:
+    except Exception as exc:
         log(f"Failed to clear LAST_POLL_MESSAGE_ID from .env: {exc}", "warning")
 
 
@@ -279,8 +279,8 @@ def _parse_positive_count_from_response(resp: requests.Response) -> int | None:
         if not resp.ok:
             try:
                 err = resp.json()
-            except ValueError as verr:
-                log(f"Failed to parse error response JSON: {verr}", "warning")
+            except Exception as exc:
+                log(f"Failed to parse error response JSON: {exc}", "warning")
                 err = None
             if isinstance(err, dict):
                 err_dict = cast("dict[str, Any]", err)
@@ -296,7 +296,7 @@ def _parse_positive_count_from_response(resp: requests.Response) -> int | None:
             msg: Any = resp.json()  # type: ignore[reportUnknownVariableType]
             parsed = _extract_positive_count_from_msg(msg)
             result = parsed
-    except (ValueError, KeyError, TypeError) as exc:
+    except Exception as exc:
         log(f"Failed to parse poll message: {exc}", "warning")
         result = None
 
@@ -326,7 +326,7 @@ def _fetch_positive_count(message_id: str) -> int | None:  # type: ignore[report
     """Fetch a message by id and return the positive vote count for the first option if available."""
     try:
         get_resp = _get_message_with_retries(message_id)
-    except requests.RequestException as exc:
+    except Exception as exc:
         log(f"GET request failed: {exc}", "warning")
         return None
     if get_resp is None:
@@ -391,8 +391,8 @@ def write_github_summary(message: str) -> None:
     try:
         with summary_path.open("w", encoding="utf-8") as f:
             f.write(message + "\n")
-    except OSError as e:
-        log(f"Failed to write GitHub summary: {e}", "warning")
+    except Exception as exc:
+        log(f"Failed to write GitHub summary: {exc}", "warning")
 
 
 # --- Main Action ---
