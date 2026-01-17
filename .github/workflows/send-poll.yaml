@@ -1,8 +1,7 @@
 ---
 name: Send WhatsApp Poll
 
-permissions:
-  actions: write
+permissions: {}
 
 on:
   # switched to cron-job.org to avoid GitHub Actions delay time
