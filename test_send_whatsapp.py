@@ -263,16 +263,16 @@ def test_write_last_poll_id_writes_env_locally(tmp_path: Path, monkeypatch: pyte
     assert os.environ.get("LAST_POLL_MESSAGE_ID") == "TESTMSG123"
 
 
-@patch("send_whatsapp.requests.put")
-def test_write_last_poll_id_calls_github_api(mock_put: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
+@patch("send_whatsapp.requests.patch")
+def test_write_last_poll_id_calls_github_api(mock_patch: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
     """When running in Actions, write_last_poll_id should call the GitHub Actions Variables API."""
     monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
     monkeypatch.setenv("GITHUB_TOKEN", "fake-token")
     mock_resp = MagicMock()
     mock_resp.status_code = 201
-    mock_put.return_value = mock_resp
+    mock_patch.return_value = mock_resp
     send_whatsapp.write_last_poll_id("MSGID-GH-1")
-    mock_put.assert_called_once()
+    mock_patch.assert_called_once()
     # verify env var was also set for current process
     assert os.environ.get("LAST_POLL_MESSAGE_ID") == "MSGID-GH-1"
 
