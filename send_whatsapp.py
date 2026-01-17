@@ -204,7 +204,7 @@ def write_last_poll_id(msg_id: str) -> None:
         env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
         os.environ["LAST_POLL_MESSAGE_ID"] = str(msg_id)
         log("Wrote LAST_POLL_MESSAGE_ID to .env", "notice")
-    except (requests.RequestException, OSError) as exc:
+    except Exception as exc:
         log(f"Failed to persist LAST_POLL_MESSAGE_ID: {exc}", "warning")
 
 
