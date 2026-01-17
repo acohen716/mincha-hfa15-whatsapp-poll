@@ -267,7 +267,7 @@ def test_write_last_poll_id_writes_env_locally(tmp_path: Path, monkeypatch: pyte
 def test_write_last_poll_id_calls_github_api(mock_patch: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
     """When running in Actions, write_last_poll_id should call the GitHub Actions Variables API."""
     monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
-    monkeypatch.setenv("GITHUB_TOKEN", "fake-token")
+    monkeypatch.setenv("ACTIONS_VARIABLE_MGMT_PAT", "fake-token")
     mock_resp = MagicMock()
     mock_resp.status_code = 201
     mock_patch.return_value = mock_resp

@@ -1,7 +1,6 @@
 name: Internal - Send WhatsApp Message
 
-permissions:
-  actions: write
+permissions: {}
 
 on:
   workflow_call:
@@ -21,7 +20,7 @@ jobs:
       LAST_POLL_MESSAGE_ID: ${{ vars.LAST_POLL_MESSAGE_ID }}
       WHAPI_TOKEN: ${{ secrets.WHAPI_TOKEN }}
       ACTION_TYPE: ${{ inputs.action_type }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ACTIONS_VARIABLE_MGMT_PAT: ${{ secrets.ACTIONS_VARIABLE_MGMT_PAT }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6

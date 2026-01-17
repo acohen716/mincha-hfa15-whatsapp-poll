@@ -160,10 +160,10 @@ def _get_message_with_retries(message_id: str) -> requests.Response | None:
     return last_response
 
 
-def _persist_github_variable(owner: str, repo: str, token: str, msg_id: str) -> bool:
+def _persist_github_variable(owner: str, repo: str, pat: str, msg_id: str) -> bool:
     """Try to PATCH the repository variable, and POST it if not found. Returns True on success."""
     headers = {
-        "Authorization": f"Bearer {token}",
+        "Authorization": f"Bearer {pat}",
         "Accept": "application/vnd.github+json",
     }
     patch_url = f"https://api.github.com/repos/{owner}/{repo}/actions/variables/LAST_POLL_MESSAGE_ID"
@@ -182,9 +182,7 @@ def _persist_github_variable(owner: str, repo: str, token: str, msg_id: str) -> 
             return True
         if post_resp.status_code == FORBIDDEN_CODE:
             log(
-                f"Failed to create GitHub variable: HTTP {FORBIDDEN_CODE} - {post_resp.text}. "
-                "This likely means the workflow token lacks 'actions: write' permission; "
-                "add the permissions section to your workflow: actions: write",
+                f"Failed to create GitHub variable: HTTP {FORBIDDEN_CODE} - {post_resp.text}.",
                 "warning",
             )
         else:
@@ -217,11 +215,11 @@ def write_last_poll_id(msg_id: str) -> None:
     """
     try:
         github_repo = os.environ.get("GITHUB_REPOSITORY")
-        github_token = os.environ.get("GITHUB_TOKEN")
-        if github_repo and github_token:
+        actions_variable_mgmt_pat = os.environ.get("ACTIONS_VARIABLE_MGMT_PAT")
+        if github_repo and actions_variable_mgmt_pat:
             owner, repo = github_repo.split("/", 1)
             try:
-                if _persist_github_variable(owner, repo, github_token, msg_id):
+                if _persist_github_variable(owner, repo, actions_variable_mgmt_pat, msg_id):
                     return
             except Exception as exc:
                 log(f"Failed to persist GitHub variable: {exc}", "warning")
