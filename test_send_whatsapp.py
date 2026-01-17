@@ -1,6 +1,7 @@
 """Unit tests for send_whatsapp.py, covering holiday logic, logging, and WhatsApp message sending functions."""
 
 import json
+import os
 import sys
 from collections.abc import Callable
 from datetime import UTC, datetime
@@ -246,3 +247,55 @@ def test_send_reminder(mock_send: MagicMock) -> None:
     mock_send.return_value = mock_response
     send_whatsapp.send_reminder("Room A")
     mock_send.assert_called()
+
+
+def test_write_last_poll_id_writes_env_locally(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """When not running in Actions, write_last_poll_id should write LAST_POLL_MESSAGE_ID to .env and to os.environ."""
+    monkeypatch.chdir(tmp_path)
+    # Ensure no GITHUB_* env vars
+    monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    send_whatsapp.write_last_poll_id("TESTMSG123")
+    env_path = tmp_path / ".env"
+    assert env_path.exists()
+    content = env_path.read_text(encoding="utf-8")
+    assert "LAST_POLL_MESSAGE_ID=TESTMSG123" in content
+    assert os.environ.get("LAST_POLL_MESSAGE_ID") == "TESTMSG123"
+
+
+@patch("send_whatsapp.requests.put")
+def test_write_last_poll_id_calls_github_api(mock_put: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
+    """When running in Actions, write_last_poll_id should call the GitHub Actions Variables API."""
+    monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
+    monkeypatch.setenv("GITHUB_TOKEN", "fake-token")
+    mock_resp = MagicMock()
+    mock_resp.status_code = 201
+    mock_put.return_value = mock_resp
+    send_whatsapp.write_last_poll_id("MSGID-GH-1")
+    mock_put.assert_called_once()
+    # verify env var was also set for current process
+    assert os.environ.get("LAST_POLL_MESSAGE_ID") == "MSGID-GH-1"
+
+
+@patch("send_whatsapp.send_request_with_retries")
+@patch("send_whatsapp._get_message_with_retries")
+def test_send_reminder_uses_get_counts(
+    mock_get: MagicMock, mock_send: MagicMock, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """send_reminder should GET the message by id, parse counts and include quoted id and missing prefix when <10."""
+    monkeypatch.setenv("LAST_POLL_MESSAGE_ID", "PsrIDamMcQrSYK8-wlMBq53kUCFYFA")
+    # Mock GET response to include poll results with count=3
+    mock_get_resp = MagicMock()
+    mock_get_resp.json.return_value = {"message": {"poll": {"results": [{"count": 3}, {"count": 0}, {"count": 0}]}}}
+    mock_get.return_value = mock_get_resp
+    mock_send_resp = MagicMock()
+    mock_send_resp.status_code = 200
+    mock_send.return_value = mock_send_resp
+    send_whatsapp.send_reminder("Room A")
+    mock_send.assert_called_once()
+    args, _ = mock_send.call_args
+    # send_request_with_retries called with (url, payload)
+    assert args[0].endswith("/messages/text")
+    payload = args[1]
+    assert payload["quoted"] == "PsrIDamMcQrSYK8-wlMBq53kUCFYFA"
+    assert payload["body"].startswith("חסר ")

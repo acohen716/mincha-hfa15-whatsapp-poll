@@ -4,14 +4,16 @@ This script selects a room based on the day of the week and sends either a poll 
 to a WhatsApp group.
 Environment variables required: WHAPI_TOKEN, WHATSAPP_GROUP_ID, ACTION_TYPE.
 """
+# pyright: reportUnknownVariableType=false, reportMissingTypeArgument=false, reportUnnecessaryCast=false
 
 import json
 import os
+import re
 import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import requests
 from dotenv import load_dotenv
@@ -47,6 +49,8 @@ HEADERS = {
 
 MAX_RETRIES = 3
 INITIAL_BACKOFF = 2  # seconds
+MINYAN_THRESHOLD = 10
+NOT_FOUND_CODE = 404
 
 
 def get_room_for_today(now: datetime) -> str:
@@ -95,7 +99,10 @@ def send_request_with_retries(url: str, payload: dict[Any, Any]) -> requests.Res
 
 
 def send_poll(room: str) -> None:
-    """Send a poll message to the WhatsApp group with room and time information."""
+    """Send a poll message to the WhatsApp group with room and time information.
+
+    Persist the poll send response so the reminder run can reference and quote the poll message.
+    """
     url = f"{BASE_URL}/messages/poll"
     payload = {
         "to": WHATSAPP_GROUP_ID,
@@ -106,18 +113,248 @@ def send_poll(room: str) -> None:
     response = send_request_with_retries(url, payload)
     if response:
         log(f"Poll sent successfully: HTTP {response.status_code}")
+        try:
+            rjson: Any = response.json()  # type: ignore[reportUnknownVariableType]
+            # Persist only the message id via write_last_poll_id
+            # (writes .env locally or GitHub variable in Actions)
+            msg_id: str | None = None
+            if isinstance(rjson, dict):
+                ms = rjson.get("message")  # type: ignore[reportUnknownVariableType]
+                if isinstance(ms, dict):
+                    msg_id = ms.get("id")  # type: ignore[reportUnknownVariableType]
+                if not msg_id:
+                    msg_id = (
+                        rjson.get("id")  # type: ignore[reportUnknownVariableType]
+                        or rjson.get("messageId")  # type: ignore[reportUnknownVariableType]
+                        or rjson.get("message_id")  # type: ignore[reportUnknownVariableType]
+                    )  # type: ignore[reportUnknownVariableType]
+            if msg_id:
+                write_last_poll_id(str(msg_id))  # type: ignore[reportUnknownVariableType]
+            else:
+                log("Poll response missing message id; not persisting.", "warning")
+        except (ValueError, OSError) as e:
+            log(f"Failed to persist poll response: {e}", "warning")
+
+
+def _get_message_with_retries(message_id: str) -> requests.Response | None:
+    """GET a message by ID with retry/backoff semantics. Returns last response or None on exception."""
+    url = f"{BASE_URL}/messages/{message_id}"
+    backoff = INITIAL_BACKOFF
+    last_response: requests.Response | None = None
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            log(f"Fetching message {message_id} from {url}")
+            response = requests.get(url, headers=HEADERS, timeout=10)
+            last_response = response
+            if response.ok:
+                log(f"Fetched message: HTTP {response.status_code}")
+                return response
+            log(f"Attempt {attempt}: HTTP {response.status_code} - {response.text}", "warning")
+        except requests.RequestException as e:
+            log(f"Attempt {attempt}: GET failed - {e}", "warning")
+        if attempt < MAX_RETRIES:
+            time.sleep(backoff)
+            backoff *= 2
+    log("All GET retry attempts exhausted; returning last response if any.", "warning")
+    return last_response
+
+
+def write_last_poll_id(msg_id: str) -> None:
+    """Persist the last poll message id either to GitHub Actions repository variables (when running in Actions).
+
+    Or to a local .env file for local development.
+
+    The reminder reads os.environ["LAST_POLL_MESSAGE_ID"] so this helper also sets the env var for the current process.
+    """
+    try:
+        github_repo = os.environ.get("GITHUB_REPOSITORY")
+        github_token = os.environ.get("GITHUB_TOKEN")
+        if github_repo and github_token:
+            owner, repo = github_repo.split("/", 1)
+            url = f"https://api.github.com/repos/{owner}/{repo}/actions/variables/LAST_POLL_MESSAGE_ID"
+            headers = {
+                "Authorization": f"Bearer {github_token}",
+                "Accept": "application/vnd.github+json",
+            }
+            payload = {"name": "LAST_POLL_MESSAGE_ID", "value": str(msg_id)}
+            resp = requests.put(url, headers=headers, json=payload, timeout=10)
+            if resp.status_code in (200, 201, 204):
+                log("Updated GitHub Actions variable LAST_POLL_MESSAGE_ID", "notice")
+                os.environ["LAST_POLL_MESSAGE_ID"] = str(msg_id)
+                return
+            log(
+                f"Failed to update GitHub variable: HTTP {resp.status_code} - {resp.text}",
+                "warning",
+            )
+        # Fallback: write to .env in repo root
+        env_path = Path(".env")
+        lines = []
+        if env_path.exists():
+            lines = env_path.read_text(encoding="utf-8").splitlines()
+            found = False
+            for i, line in enumerate(lines):
+                if line.strip().startswith("LAST_POLL_MESSAGE_ID="):
+                    lines[i] = f"LAST_POLL_MESSAGE_ID={msg_id}"
+                    found = True
+                    break
+            if not found:
+                lines.append(f"LAST_POLL_MESSAGE_ID={msg_id}")
+        else:
+            lines = [f"LAST_POLL_MESSAGE_ID={msg_id}"]
+        env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        os.environ["LAST_POLL_MESSAGE_ID"] = str(msg_id)
+        log("Wrote LAST_POLL_MESSAGE_ID to .env", "notice")
+    except (requests.RequestException, OSError) as exc:
+        log(f"Failed to persist LAST_POLL_MESSAGE_ID: {exc}", "warning")
+
+
+def _clear_local_last_poll_id() -> None:
+    """Remove LAST_POLL_MESSAGE_ID from local .env and the current process environment."""
+    try:
+        env_path = Path(".env")
+        if env_path.exists():
+            lines = env_path.read_text(encoding="utf-8").splitlines()
+            new_lines = [line for line in lines if not line.strip().startswith("LAST_POLL_MESSAGE_ID=")]
+            env_path.write_text("\n".join(new_lines) + ("\n" if new_lines else ""), encoding="utf-8")
+        os.environ.pop("LAST_POLL_MESSAGE_ID", None)
+    except OSError as exc:
+        log(f"Failed to clear LAST_POLL_MESSAGE_ID from .env: {exc}", "warning")
 
 
 def send_reminder(room: str) -> None:
-    """Send a reminder message to the WhatsApp group if the poll has not been answered."""
-    url = f"{BASE_URL}/messages/text"
+    """Send a reminder message to the WhatsApp group if the poll has not been answered.
+
+    If a persisted poll exists, fetch it and count positive responses to vary the body text.
+    Always send the reminder quoted as the poll message when possible.
+    """
+    # Default reminder text
+    default_body = f"🔔 תזכורת: אם עוד לא עניתם לסקר - זה הזמן! נתראה ב-13:30, חדר {room}\n\n_ההודעה נשלחה אוטומטית_"
+
+    # Get persisted poll message id from environment; do not rely on last_poll.json.
+    poll_id = os.environ.get("LAST_POLL_MESSAGE_ID")
+    if not poll_id:
+        log(
+            "LAST_POLL_MESSAGE_ID not found in environment; reminder will use default text unless GET succeeds.",
+            "warning",
+        )
+
+    # Do not rely on persisted payload for counts. Only use persisted env to get message id for quoting.
+    positive_count = None
+
+    # Always try to GET the latest message counts when we have a message id
+    if poll_id:
+        pid_str = str(poll_id)
+        # Validate msg id format to avoid calling GET with junk (e.g., MagicMock string) during tests
+        if not _is_valid_msg_id(pid_str):
+            log("LAST_POLL_MESSAGE_ID looks invalid; ignoring it for this run.", "warning")
+            # If running locally, clear the .env entry so we don't keep persisting bad values
+            if not os.environ.get("GITHUB_REPOSITORY"):
+                _clear_local_last_poll_id()
+                log("Cleared LAST_POLL_MESSAGE_ID from .env and environment (invalid value).", "notice")
+            # Always ignore invalid id for sending
+            poll_id = None
+        else:
+            positive_count = _fetch_positive_count(pid_str)
+
+    # Build reminder body based on positive_count using helper
+    body = _build_reminder_body(positive_count, room, default_body)
+
     payload = {
         "to": WHATSAPP_GROUP_ID,
-        "body": f"🔔 תזכורת: אם עוד לא עניתם לסקר - זה הזמן! נתראה ב-13:30, חדר {room}\n\n_ההודעה נשלחה אוטומטית_",
+        "body": body,
     }
-    response = send_request_with_retries(url, payload)
+
+    if poll_id:
+        payload["quoted"] = str(poll_id)
+
+    response = send_request_with_retries(f"{BASE_URL}/messages/text", payload)
     if response:
         log(f"Reminder sent successfully: HTTP {response.status_code}")
+
+
+def _parse_positive_count_from_response(resp: requests.Response) -> int | None:
+    """Parse a WHAPI message response and return the positive vote count (first option) or None."""
+    result: int | None = None
+    try:
+        if not resp.ok:
+            try:
+                err = resp.json()
+            except ValueError as verr:
+                log(f"Failed to parse error response JSON: {verr}", "warning")
+                err = None
+            if isinstance(err, dict):
+                err_dict = cast("dict[str, Any]", err)
+                code = err_dict.get("error", {}).get("code")
+                message = err_dict.get("error", {}).get("message", "")
+                if code == NOT_FOUND_CODE and "specified message not found" in message:
+                    log("Poll message not found (404); using default reminder.", "notice")
+                else:
+                    log(f"GET returned non-OK {resp.status_code}; skipping counts.", "warning")
+            else:
+                log(f"GET returned non-OK {resp.status_code}; skipping counts.", "warning")
+        else:
+            msg: Any = resp.json()  # type: ignore[reportUnknownVariableType]
+            parsed = _extract_positive_count_from_msg(msg)
+            result = parsed
+    except (ValueError, KeyError, TypeError) as exc:
+        log(f"Failed to parse poll message: {exc}", "warning")
+        result = None
+
+    return result
+
+
+def _extract_positive_count_from_msg(msg: object) -> int | None:
+    """Given a parsed message object, extract the positive count if present."""
+    if isinstance(msg, dict) and "message" in msg and isinstance(msg["message"], dict):
+        msg = msg["message"]
+    if not isinstance(msg, dict):
+        return None
+    msg = cast("dict[str, Any]", msg)
+    poll_section = msg.get("poll") or msg.get("interactive") or msg  # type: ignore[reportUnknownVariableType]
+    if not isinstance(poll_section, dict):
+        return None
+    results = poll_section.get("results") or None  # type: ignore[reportUnknownVariableType]
+    if isinstance(results, list):
+        votes = [r.get("count") or 0 for r in results if isinstance(r, dict)]  # type: ignore[reportUnknownVariableType]
+    else:
+        opts = poll_section.get("options") or None  # type: ignore[reportUnknownVariableType]
+        votes = [o.get("votes") or o.get("count") or 0 for o in (opts or []) if isinstance(o, dict)]  # type: ignore[reportUnknownVariableType]
+    return votes[0] if votes else None
+
+
+def _fetch_positive_count(message_id: str) -> int | None:  # type: ignore[reportUnknownVariableType]
+    """Fetch a message by id and return the positive vote count for the first option if available."""
+    try:
+        get_resp = _get_message_with_retries(message_id)
+    except requests.RequestException as exc:
+        log(f"GET request failed: {exc}", "warning")
+        return None
+    if get_resp is None:
+        return None
+    return _parse_positive_count_from_response(get_resp)
+
+
+def _build_reminder_body(positive_count: int | None, room: str, default_body: str) -> str:
+    """Return the reminder body for given positive_count and room.
+
+    Two paths: if positive_count is at least MINYAN_THRESHOLD, announce minyan; otherwise
+    prepend the missing count to the default body.
+    """
+    if positive_count is None:
+        return default_body
+    if positive_count >= MINYAN_THRESHOLD:
+        return f"יש מניין! כל מי שרוצה להצטרף יותר ממוזמן. נתראה ב-13:30, חדר {room}\n\n_ההודעה נשלחה אוטומטית_"
+    missing = MINYAN_THRESHOLD - (positive_count or 0)
+    return f"חסר {missing} — " + default_body
+
+
+# WHAPI MessageID pattern per their docs
+MSG_ID_PATTERN = re.compile(r"^[A-Za-z0-9._]{4,30}-[A-Za-z0-9._]{4,14}(-[A-Za-z0-9._]{4,10})?(-[A-Za-z0-9._]{2,10})?$")
+
+
+def _is_valid_msg_id(msg_id: str) -> bool:
+    """Return True if msg_id matches the WHAPI MessageID pattern."""
+    return bool(MSG_ID_PATTERN.fullmatch(msg_id))
 
 
 def is_today_holiday(now: datetime) -> str | None:

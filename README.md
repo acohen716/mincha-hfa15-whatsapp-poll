@@ -40,11 +40,12 @@ uv run pytest .
 
 ## Environment Variables
 
-| Variable          | Description          |
-| ----------------- | -------------------- |
-| WHAPI_TOKEN       | Whapi API token      |
-| WHATSAPP_GROUP_ID | WhatsApp group ID    |
-| ACTION_TYPE       | "poll" or "reminder" |
+| Variable             | Description          |
+| -------------------- | -------------------- |
+| WHAPI_TOKEN          | Whapi API token      |
+| WHATSAPP_GROUP_ID    | WhatsApp group ID    |
+| ACTION_TYPE          | "poll" or "reminder" |
+| LAST_POLL_MESSAGE_ID | last poll messageID  |
 
 ## Details
 
