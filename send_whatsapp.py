@@ -51,6 +51,7 @@ MAX_RETRIES = 3
 INITIAL_BACKOFF = 2  # seconds
 MINYAN_THRESHOLD = 10
 NOT_FOUND_CODE = 404
+FORBIDDEN_CODE = 403
 
 
 def get_room_for_today(now: datetime) -> str:
@@ -159,6 +160,54 @@ def _get_message_with_retries(message_id: str) -> requests.Response | None:
     return last_response
 
 
+def _persist_github_variable(owner: str, repo: str, token: str, msg_id: str) -> bool:
+    """Try to PATCH the repository variable, and POST it if not found. Returns True on success."""
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+    }
+    patch_url = f"https://api.github.com/repos/{owner}/{repo}/actions/variables/LAST_POLL_MESSAGE_ID"
+    resp = requests.patch(patch_url, headers=headers, json={"value": str(msg_id)}, timeout=10)
+    if resp.status_code in (200, 201, 204):
+        log("Updated GitHub Actions variable LAST_POLL_MESSAGE_ID (patched)", "notice")
+        os.environ["LAST_POLL_MESSAGE_ID"] = str(msg_id)
+        return True
+    if resp.status_code == NOT_FOUND_CODE:
+        post_url = f"https://api.github.com/repos/{owner}/{repo}/actions/variables"
+        post_payload = {"name": "LAST_POLL_MESSAGE_ID", "value": str(msg_id)}
+        post_resp = requests.post(post_url, headers=headers, json=post_payload, timeout=10)
+        if post_resp.status_code in (200, 201, 204):
+            log("Created GitHub Actions variable LAST_POLL_MESSAGE_ID", "notice")
+            os.environ["LAST_POLL_MESSAGE_ID"] = str(msg_id)
+            return True
+        if post_resp.status_code == FORBIDDEN_CODE:
+            log(
+                f"Failed to create GitHub variable: HTTP {FORBIDDEN_CODE} - {post_resp.text}. "
+                "This likely means the workflow token lacks 'actions: write' permission; "
+                "add the permissions section to your workflow: actions: write",
+                "warning",
+            )
+        else:
+            log(
+                f"Failed to create GitHub variable: HTTP {post_resp.status_code} - {post_resp.text}",
+                "warning",
+            )
+        return False
+    if resp.status_code == FORBIDDEN_CODE:
+        log(
+            f"Failed to update GitHub variable: HTTP {FORBIDDEN_CODE} - {resp.text}. "
+            "This likely means the workflow token lacks 'actions: write' permission; "
+            "add the permissions section to your workflow: actions: write",
+            "warning",
+        )
+        return False
+    log(
+        f"Failed to update GitHub variable: HTTP {resp.status_code} - {resp.text}",
+        "warning",
+    )
+    return False
+
+
 def write_last_poll_id(msg_id: str) -> None:
     """Persist the last poll message id either to GitHub Actions repository variables (when running in Actions).
 
@@ -171,21 +220,11 @@ def write_last_poll_id(msg_id: str) -> None:
         github_token = os.environ.get("GITHUB_TOKEN")
         if github_repo and github_token:
             owner, repo = github_repo.split("/", 1)
-            url = f"https://api.github.com/repos/{owner}/{repo}/actions/variables/LAST_POLL_MESSAGE_ID"
-            headers = {
-                "Authorization": f"Bearer {github_token}",
-                "Accept": "application/vnd.github+json",
-            }
-            payload = {"name": "LAST_POLL_MESSAGE_ID", "value": str(msg_id)}
-            resp = requests.put(url, headers=headers, json=payload, timeout=10)
-            if resp.status_code in (200, 201, 204):
-                log("Updated GitHub Actions variable LAST_POLL_MESSAGE_ID", "notice")
-                os.environ["LAST_POLL_MESSAGE_ID"] = str(msg_id)
-                return
-            log(
-                f"Failed to update GitHub variable: HTTP {resp.status_code} - {resp.text}",
-                "warning",
-            )
+            try:
+                if _persist_github_variable(owner, repo, github_token, msg_id):
+                    return
+            except Exception as exc:
+                log(f"Failed to persist GitHub variable: {exc}", "warning")
         # Fallback: write to .env in repo root
         env_path = Path(".env")
         lines = []
