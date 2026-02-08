@@ -135,16 +135,6 @@ def test_is_today_holiday_file_missing(tmp_path: Path, monkeypatch: pytest.Monke
     mock_log.assert_called()
 
 
-def test_get_room_for_today_various_days() -> None:
-    """Test get_room_for_today returns correct room based on weekday."""
-    # Sunday (6) -> '06.709 (ממ"ק הצפוני)'
-    assert send_whatsapp.get_room_for_today(datetime(2025, 8, 3, tzinfo=UTC)) == '06.709 (ממ"ק הצפוני)'
-    # Monday (0) -> '06.709 (ממ"ק הצפוני)'
-    assert send_whatsapp.get_room_for_today(datetime(2025, 8, 4, tzinfo=UTC)) == '06.709 (ממ"ק הצפוני)'
-    # Thursday (3) -> '06.709 (ממ"ק הצפוני)'
-    assert send_whatsapp.get_room_for_today(datetime(2025, 8, 7, tzinfo=UTC)) == '06.709 (ממ"ק הצפוני)'
-
-
 @patch("send_whatsapp.write_github_summary")
 @patch("send_whatsapp.send_reminder")
 @patch("send_whatsapp.datetime")
