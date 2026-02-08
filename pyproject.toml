@@ -23,6 +23,6 @@ typeCheckingMode = "strict"
 dev = [
     "pyright[nodejs]>=1.1.408",
     "pytest>=9.0.2",
-    "ruff>=0.14.11",
+    "ruff>=0.15.0",
     "types-requests>=2.32.4.20260107",
 ]
