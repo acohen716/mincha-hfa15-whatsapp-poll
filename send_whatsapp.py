@@ -54,22 +54,6 @@ NOT_FOUND_CODE = 404
 FORBIDDEN_CODE = 403
 
 
-def get_room_for_today(now: datetime) -> str:
-    """Determine the room based on the day of week."""
-    weekday = now.weekday()  # Monday=0, Sunday=6
-    # Reserved 06.502 as of Thurs Jan 1 2026 for all Sun - Thurs until Dec 31 2026
-    # Reserved 03.500 as of Thurs Jan 1 2026 for all Sun, Mon, Wed, Thurs until Dec 31 2026
-    # Except Tues Jan 20 2026, reserved 03.501 as of Thurs Jan 1 2026 for all Tues until Dec 31 2026
-    # Was asked to free 03.500 on ALL Tues so we will try 06.502 for the upcoming week, if good then we'll
-    #  cancel everything else, else revert back to 03.500 for Sun, Mon, Wed, Thurs and 03.501 for Tues
-    # Was asked to free 06.502 on Thurs Jan 15 2026 for that day only but GREF mentioned that floor 6 often
-    #  has visitors so they recommended just using the north shelter on floor 6 (06.709) instead, we will
-    #  try and see how it goes
-    room = "03.501" if weekday in {} else '06.709 (ממ"ק הצפוני)'
-    log(f"Today is weekday {weekday}. Selected room: {room}")
-    return room
-
-
 def send_request_with_retries(url: str, payload: dict[Any, Any]) -> requests.Response:
     """Send a POST request with retries and exponential backoff.
 
@@ -455,7 +439,7 @@ def main() -> None:
         write_github_summary(f"🌴 Today is a holiday: {holiday_name}. No WhatsApp message sent.")
         sys.exit(0)
 
-    room = get_room_for_today(now)
+    room = '06.709 (ממ"ק הצפוני)'
 
     action = get_env_var("ACTION_TYPE")
     if action not in {"poll", "reminder"}:
