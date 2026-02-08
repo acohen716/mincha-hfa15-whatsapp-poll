@@ -280,15 +280,6 @@ def send_reminder(room: str) -> None:
     # Build reminder body based on positive_count using helper
     body = _build_reminder_body(positive_count, room, default_body)
 
-    # TODO(adamcoh): TEMPORARY - the positive_count seems to have a bug and isn't accurate # noqa: TD003,FIX002
-    # ignored for now, will send an email to Whapi support team so they can debug
-    # once fixed also re-enable the test that checks for missing count in the reminder body
-    log(
-        f"Temporarily disabling positive_count logic due to suspected bug; using default_body (instead of {body}).",
-        "notice",
-    )
-    body = default_body
-
     payload = {
         "to": WHATSAPP_GROUP_ID,
         "body": body,
@@ -296,8 +287,6 @@ def send_reminder(room: str) -> None:
 
     if poll_id:
         payload["quoted"] = str(poll_id)
-
-    log(f"Sending reminder with payload: {json.dumps(payload, ensure_ascii=False)}")
 
     response = send_request_with_retries(f"{BASE_URL}/messages/text", payload)
     if response:

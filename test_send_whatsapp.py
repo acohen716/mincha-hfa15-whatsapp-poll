@@ -288,4 +288,4 @@ def test_send_reminder_uses_get_counts(
     assert args[0].endswith("/messages/text")
     payload = args[1]
     assert payload["quoted"] == "PsrIDamMcQrSYK8-wlMBq53kUCFYFA"
-    # assert payload["body"].startswith("חסר 7")  # noqa: ERA001
+    assert payload["body"].startswith("חסר ")
