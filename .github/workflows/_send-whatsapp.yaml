@@ -23,7 +23,7 @@ jobs:
       ACTIONS_VARIABLE_MGMT_PAT: ${{ secrets.ACTIONS_VARIABLE_MGMT_PAT }}
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version-file: "pyproject.toml"
       - uses: astral-sh/setup-uv@v7
