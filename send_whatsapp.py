@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Adam Cohen
 """Send WhatsApp poll or reminder messages to a group using the WHAPI cloud API.
 
 This script selects a room based on the day of the week and sends either a poll or a reminder message

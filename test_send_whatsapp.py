@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Adam Cohen
 """Unit tests for send_whatsapp.py, covering holiday logic, logging, and WhatsApp message sending functions."""
 
 import json
